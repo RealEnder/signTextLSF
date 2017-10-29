@@ -1,2 +1,2 @@
 # signTextLSF
-WebExtension implementing window.crypto.signText over LSF
+WebExtension implementing crypto.signText() over LSF
