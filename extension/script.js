@@ -76,7 +76,7 @@
 	function signText(stringToSign) {
 		console.info(TAG + 'Starting');
 
-		var baseUrl = 'http://127.0.0.1:8090';
+		var baseUrl = 'https://127.0.0.1:8089';
 		
 		// Version request
 		var versionResponse = request('GET', baseUrl + '/version');
