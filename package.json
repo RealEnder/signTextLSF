@@ -1,0 +1,14 @@
+{
+  "name": "signtextlsf",
+  "version": "1.0.0",
+  "description": "This extension emulates Netscape's crypto.signText() using LSF.",
+  "main": "contentscript.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "webextension"
+  ],
+  "author": "Information Services Plc",
+  "license": "ISC"
+}
