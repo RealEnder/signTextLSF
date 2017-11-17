@@ -4,6 +4,12 @@
 	"name": "signTextLSF",
 	"description": "This extension emulates Netscape's crypto.signText() using LSF.",
 	"version": "1.0",
+	"icons": {
+		"40": "icons/signTextLSF-40.png",
+		"48": "icons/signTextLSF-48.png",
+		"64": "icons/signTextLSF-64.png",
+		"128": "icons/signTextLSF-128.png"
+	},
 
 	"content_scripts": [{
 		"matches": [
