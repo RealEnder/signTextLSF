@@ -5,6 +5,12 @@
 	"description": "This extension emulates Netscape's crypto.signText() using LSF.",
 	"version": "1.0",
 	"author": "Information Services Plc.",
+	"icons": {
+		"40": "icons/signTextLSF-40.png",
+		"48": "icons/signTextLSF-48.png",
+		"64": "icons/signTextLSF-64.png",
+		"128": "icons/signTextLSF-128.png"
+	},
 
 	"content_scripts": [{
 		"matches": [
@@ -15,6 +21,14 @@
 			"contentscript.js"
 		]
 	}],
+	"permissions": [
+		"http://127.0.0.1:8090",
+		"http://127.0.0.1:23125",
+		"http://127.0.0.1:53953",
+		"https://127.0.0.1:8089",
+		"https://127.0.0.1:23124",
+		"https://127.0.0.1:53952"
+	],
 	"web_accessible_resources": [
 		"script.js"
 	]
