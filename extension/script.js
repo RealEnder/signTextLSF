@@ -12,11 +12,14 @@
 	var xhr;
 
 	function request(method, url, data) {
+		var TAG2 = TAG + '[' + method + ' ' + url + '] ';
+		
 		try {
 			if (!xhr) {
 				xhr = new XMLHttpRequest;
 
 				if (!xhr) {
+					console.error(TAG2 + 'Failed to create a XMLHttpRequest object');
 					return false;
 				}
 			}
@@ -31,15 +34,17 @@
 			xhr.send(JSON.stringify(data));
 
 			if (xhr.status !== 200) {
-				console.error(TAG + 'Request "' + url + '" Error (HTTP Status code: ' + xhr.status + ')');
+				console.error(TAG2 + 'Unexpected HTTP status code ' + xhr.status);
 				return false;
 			}
 
-			console.log(TAG + 'Request "' + url + '" OK');
+			console.log(TAG2 + 'Request successful');
 			
 			return JSON.parse(xhr.responseText);
 		}
 		catch (e) {
+			console.error(TAG2 + 'Exception during request');
+			console.error(e);
 			return false;
 		}
 	}
@@ -71,24 +76,22 @@
 			}
 		}
 	}
-
-	// https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
-	function signText(stringToSign) {
-		console.info(TAG + 'Starting');
-
-		var baseUrl = 'https://127.0.0.1:8089';
+	
+	function checkServer(baseUrl) {
+		var TAG2 = TAG + '[' + baseUrl + '] ';
+		
+		console.info(TAG2 + 'Checking URL');
 		
 		// Version request
 		var versionResponse = request('GET', baseUrl + '/version');
 
 		if (versionResponse === false) {
-			// TODO: start LSF and tell user to retry
-			console.error(TAG + 'LSF not found');
-			alert('Please start LSF before signing!');
-			return 'error:internalError';
+			console.warn(TAG2 + 'Request error');
+			return false;
 		}
-
-		//console.log(versionResponse);
+		
+		console.info(TAG2 + 'Version response received');
+		console.log(versionResponse);
 		
 		if (
 			versionResponse.version === undefined ||
@@ -98,8 +101,8 @@
 			versionResponse.selectorAvailable === undefined ||
 			versionResponse.hashAlgorithms === undefined
 		) {
-			console.error(TAG + 'Invalid SCS version response');
-			return 'error:internalError';
+			console.error(TAG2 + 'Version response is not valid');
+			return false;
 		}
 		
 		try {
@@ -107,16 +110,53 @@
 			//detectFeatures(versionResponse, {});
 		}
 		catch (e) {
-			console.error(TAG + 'Feature detection error: ' + e.message);
+			console.error(TAG2 + 'Feature detection error: ' + e.message);
+			return false;
+		}
+		
+		console.info(TAG2 + 'Feature detection successful, using this server');
+		return true;
+	}
+
+	// https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
+	function signText(stringToSign) {
+		console.info(TAG + 'Extension code starting');
+
+		var baseUrl = null;
+		var baseUrls = [
+			'http://127.0.0.1:8090',
+			'https://127.0.0.1:8089',
+			
+			'http://127.0.0.1:23125',
+			'https://127.0.0.1:23124',
+			
+			'http://127.0.0.1:53953',
+			'https://127.0.0.1:53952'
+		];
+		
+		var i;
+		for (i = 0; i < baseUrls.length; ++i) {
+			if (checkServer(baseUrls[i])) {
+				baseUrl = baseUrls[i];
+				break;
+			}
+		}
+		
+		if (baseUrl === null) {
+			console.error(TAG + 'LSF not found');
+			alert('Please start LSF before signing!');
 			return 'error:internalError';
 		}
 
+		console.info(TAG + 'Requesting signature');
+		
 		// Signing request
 		var signResponse = request('POST', baseUrl + '/sign', {
 			'content': btoa(stringToSign)
 		});
 		
-		//console.log(signResponse);
+		console.info(TAG + 'Signature response received');
+		console.log(signResponse);
 		
 		if (
 			signResponse.errorCode === undefined ||
@@ -125,13 +165,13 @@
 			signResponse.signatureAlgorithm === undefined ||
 			signResponse.signatureType === undefined
 		) {
-			console.error(TAG + 'Invalid SCS sign response');
+			console.error(TAG + 'Signature response is not valid');
 			return 'error:internalError';
 		}
 		
 		if (signResponse.errorCode !== 0) {
 			if (signResponse.errorCode === 1) {
-				console.info(TAG + 'Operation cancelled by user');
+				console.info(TAG + 'Signature operation cancelled by user');
 				return 'error:userCancel';
 			}
 			
@@ -153,8 +193,8 @@
 			return 'error:internalError';
 		}
 		
-		console.info(TAG + signResponse.reasonText);
-		console.info(TAG + 'Completed');
+		console.info(TAG + 'Signature successful, returning result to the browser');
+		console.info(TAG + 'Extension code completed');
 
 		return signResponse.signature;
 	}
