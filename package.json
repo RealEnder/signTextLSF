@@ -10,5 +10,8 @@
     "webextension"
   ],
   "author": "Information Services Plc",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "web-ext": "^2.2.2"
+  }
 }
