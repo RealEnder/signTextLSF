@@ -28,7 +28,15 @@
 			xhr.open(method, url, false);
 			
 			if (data) {
-				xhr.setRequestHeader('Content-Type', 'application/json');
+				// Firefox does not support pre-flight OPTIONS requests from secure origin to 127.0.0.1
+				// See https://bugzilla.mozilla.org/show_bug.cgi?id=1376310
+				// Chrome and Opera support it
+				// TODO: test in Edge
+				var isFirefox = (navigator.userAgent.indexOf('Firefox/') > -1);
+				
+				if (!isFirefox) {
+					xhr.setRequestHeader('Content-Type', 'application/json');
+				}
 			}
 			
 			xhr.send(JSON.stringify(data));
