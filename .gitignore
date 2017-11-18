@@ -56,3 +56,9 @@ typings/
 
 # dotenv environment variables file
 .env
+
+# WebExtension build files
+web-ext-artifacts
+
+# Mozilla web-ext auto-generated
+extension/.web-extension-id
