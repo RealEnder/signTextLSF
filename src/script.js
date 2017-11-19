@@ -1,216 +1,218 @@
-var base64js = require('base64-js');
-var textEncoding = require('text-encoding');
+(function(root) {
+	var TAG = '[signText] ';
 
-var TAG = '[signText] ';
+	if (typeof root.crypto === 'undefined') {
+		console.warn(TAG + 'crypto is not defined - not a browser?');
+		root.crypto = {};
+	}
 
-if (typeof window.crypto === 'undefined') {
-	console.warn(TAG + 'window.crypto is not defined - not a browser?');
-	window.crypto = {};
-}
-
-if (typeof window.crypto.signText !== 'undefined') {
-	console.warn(TAG + 'window.crypto.signText already defined - exiting');
-	return;
-}
-
-var xhr;
-
-function request(method, url, data) {
-	var TAG2 = TAG + '[' + method + ' ' + url + '] ';
+	if (typeof root.crypto.signText !== 'undefined') {
+		console.warn(TAG + 'crypto.signText already defined - exiting');
+		return;
+	}
 	
-	try {
-		if (!xhr) {
-			xhr = new XMLHttpRequest;
+	var base64js = require('base64-js');
+	var textEncoding = require('text-encoding');
 
+	var xhr;
+
+	function request(method, url, data) {
+		var TAG2 = TAG + '[' + method + ' ' + url + '] ';
+		
+		try {
 			if (!xhr) {
-				console.error(TAG2 + 'Failed to create a XMLHttpRequest object');
+				xhr = new XMLHttpRequest;
+
+				if (!xhr) {
+					console.error(TAG2 + 'Failed to create a XMLHttpRequest object');
+					return false;
+				}
+			}
+
+			// crypto.signText() is blocking, so this must be blocking as well
+			xhr.open(method, url, false);
+			
+			if (data) {
+				// Firefox does not support pre-flight OPTIONS requests from secure origin to 127.0.0.1
+				// See https://bugzilla.mozilla.org/show_bug.cgi?id=1376310
+				// Chrome and Opera support it
+				// TODO: test in Edge
+				var isFirefox = (navigator.userAgent.indexOf('Firefox/') > -1);
+				
+				if (!isFirefox) {
+					xhr.setRequestHeader('Content-Type', 'application/json');
+				}
+			}
+			
+			xhr.send(JSON.stringify(data));
+
+			if (xhr.status !== 200) {
+				console.error(TAG2 + 'Unexpected HTTP status code ' + xhr.status);
 				return false;
 			}
-		}
 
-		// crypto.signText() is blocking, so this must be blocking as well
-		xhr.open(method, url, false);
-		
-		if (data) {
-			// Firefox does not support pre-flight OPTIONS requests from secure origin to 127.0.0.1
-			// See https://bugzilla.mozilla.org/show_bug.cgi?id=1376310
-			// Chrome and Opera support it
-			// TODO: test in Edge
-			var isFirefox = (navigator.userAgent.indexOf('Firefox/') > -1);
+			console.log(TAG2 + 'Request successful');
 			
-			if (!isFirefox) {
-				xhr.setRequestHeader('Content-Type', 'application/json');
-			}
+			return JSON.parse(xhr.responseText);
 		}
-		
-		xhr.send(JSON.stringify(data));
-
-		if (xhr.status !== 200) {
-			console.error(TAG2 + 'Unexpected HTTP status code ' + xhr.status);
+		catch (e) {
+			console.error(TAG2 + 'Exception during request');
+			console.error(e);
 			return false;
 		}
+	}
 
-		console.log(TAG2 + 'Request successful');
+	function detectFeatures(json, features) {
+		var i, tmp1, tmp2;
 		
-		return JSON.parse(xhr.responseText);
-	}
-	catch (e) {
-		console.error(TAG2 + 'Exception during request');
-		console.error(e);
-		return false;
-	}
-}
-
-function detectFeatures(json, features) {
-	var i, tmp1, tmp2;
-	
-	for (i in features) {
-		if (features.hasOwnProperty(i)) {
-			if (!json[i]) {
-				throw new Error('Missing required key in version response');
-			}
-			if (typeof json[i] === "boolean" && json[i] !== features[i]) {
-				throw new Error('Invalid required boolean value');
-			}
-			if (typeof json[i] === 'string') {
-				tmp1 = json[i].split(',').map(function (v) {
-					return v.trim();
-				});
-				tmp2 = features[i].split(',').map(function (v) {
-					return v.trim();
-				});
-				tmp2.forEach(function (v) {
-					if (tmp1.indexOf(v) === -1) {
-						throw new Error('Missing required array item');
-					}
-				});
+		for (i in features) {
+			if (features.hasOwnProperty(i)) {
+				if (!json[i]) {
+					throw new Error('Missing required key in version response');
+				}
+				if (typeof json[i] === "boolean" && json[i] !== features[i]) {
+					throw new Error('Invalid required boolean value');
+				}
+				if (typeof json[i] === 'string') {
+					tmp1 = json[i].split(',').map(function (v) {
+						return v.trim();
+					});
+					tmp2 = features[i].split(',').map(function (v) {
+						return v.trim();
+					});
+					tmp2.forEach(function (v) {
+						if (tmp1.indexOf(v) === -1) {
+							throw new Error('Missing required array item');
+						}
+					});
+				}
 			}
 		}
 	}
-}
 
-function checkServer(baseUrl) {
-	var TAG2 = TAG + '[' + baseUrl + '] ';
-	
-	console.info(TAG2 + 'Checking URL');
-	
-	// Version request
-	var versionResponse = request('GET', baseUrl + '/version');
-
-	if (versionResponse === false) {
-		console.warn(TAG2 + 'Request error');
-		return false;
-	}
-	
-	console.info(TAG2 + 'Version response received');
-	console.log(versionResponse);
-	
-	if (
-		versionResponse.version === undefined ||
-		versionResponse.httpMethods === undefined ||
-		versionResponse.contentTypes === undefined ||
-		versionResponse.signatureTypes === undefined ||
-		versionResponse.selectorAvailable === undefined ||
-		versionResponse.hashAlgorithms === undefined
-	) {
-		console.error(TAG2 + 'Version response is not valid');
-		return false;
-	}
-	
-	try {
-		// TODO
-		//detectFeatures(versionResponse, {});
-	}
-	catch (e) {
-		console.error(TAG2 + 'Feature detection error: ' + e.message);
-		return false;
-	}
-	
-	console.info(TAG2 + 'Feature detection successful, using this server');
-	return true;
-}
-
-// https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
-function signText(stringToSign) {
-	console.info(TAG + 'Extension code starting');
-
-	var baseUrl = null;
-	var baseUrls = [
-		'http://127.0.0.1:8090',
-		'https://127.0.0.1:8089',
+	function checkServer(baseUrl) {
+		var TAG2 = TAG + '[' + baseUrl + '] ';
 		
-		'http://127.0.0.1:23125',
-		'https://127.0.0.1:23124',
+		console.info(TAG2 + 'Checking URL');
 		
-		'http://127.0.0.1:53953',
-		'https://127.0.0.1:53952'
-	];
-	
-	var i;
-	for (i = 0; i < baseUrls.length; ++i) {
-		if (checkServer(baseUrls[i])) {
-			baseUrl = baseUrls[i];
-			break;
-		}
-	}
-	
-	if (baseUrl === null) {
-		console.error(TAG + 'LSF not found');
-		alert('Please start LSF before signing!');
-		return 'error:internalError';
-	}
+		// Version request
+		var versionResponse = request('GET', baseUrl + '/version');
 
-	console.info(TAG + 'Requesting signature');
-	
-	// Signing request
-	var textEncoderUtf8 = new textEncoding.TextEncoder('utf-8');
-	var signResponse = request('POST', baseUrl + '/sign', {
-		'content': base64js.fromByteArray(textEncoderUtf8.encode(stringToSign))
-	});
-	
-	console.info(TAG + 'Signature response received');
-	console.log(signResponse);
-	
-	if (
-		signResponse.errorCode === undefined ||
-		signResponse.reasonCode === undefined ||
-		signResponse.signature === undefined ||
-		signResponse.signatureAlgorithm === undefined ||
-		signResponse.signatureType === undefined
-	) {
-		console.error(TAG + 'Signature response is not valid');
-		return 'error:internalError';
-	}
-	
-	if (signResponse.errorCode !== 0) {
-		if (signResponse.errorCode === 1) {
-			console.info(TAG + 'Signature operation cancelled by user');
-			return 'error:userCancel';
+		if (versionResponse === false) {
+			console.warn(TAG2 + 'Request error');
+			return false;
 		}
 		
-		console.error(TAG + 'Error in operation, errorCode=' + signResponse.errorCode);
-		return 'error:internalError';
-	}
-	
-	if (signResponse.reasonCode !== 200) {
-		console.error(TAG + 'Error in operaton, reasonCode=' + signResponse.errorCode);
-		return 'error:internalError';
+		console.info(TAG2 + 'Version response received');
+		console.log(versionResponse);
+		
+		if (
+			versionResponse.version === undefined ||
+			versionResponse.httpMethods === undefined ||
+			versionResponse.contentTypes === undefined ||
+			versionResponse.signatureTypes === undefined ||
+			versionResponse.selectorAvailable === undefined ||
+			versionResponse.hashAlgorithms === undefined
+		) {
+			console.error(TAG2 + 'Version response is not valid');
+			return false;
+		}
+		
+		try {
+			// TODO
+			//detectFeatures(versionResponse, {});
+		}
+		catch (e) {
+			console.error(TAG2 + 'Feature detection error: ' + e.message);
+			return false;
+		}
+		
+		console.info(TAG2 + 'Feature detection successful, using this server');
+		return true;
 	}
 
-	if (
-		signResponse.signatureType !== 'signature' ||
-		signResponse.signatureAlgorithm !== 'SHA1withRSA'
-	) {
-		console.error(TAG + 'Error in operaton, got wrong type or algorithm (' +
-			signResponse.signatureType + '/' + signResponse.signatureAlgorithm + ')');
-		return 'error:internalError';
+	// https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
+	function signText(stringToSign) {
+		console.info(TAG + 'Extension code starting');
+
+		var baseUrl = null;
+		var baseUrls = [
+			'http://127.0.0.1:8090',
+			'https://127.0.0.1:8089',
+			
+			'http://127.0.0.1:23125',
+			'https://127.0.0.1:23124',
+			
+			'http://127.0.0.1:53953',
+			'https://127.0.0.1:53952'
+		];
+		
+		var i;
+		for (i = 0; i < baseUrls.length; ++i) {
+			if (checkServer(baseUrls[i])) {
+				baseUrl = baseUrls[i];
+				break;
+			}
+		}
+		
+		if (baseUrl === null) {
+			console.error(TAG + 'LSF not found');
+			alert('Please start LSF before signing!');
+			return 'error:internalError';
+		}
+
+		console.info(TAG + 'Requesting signature');
+		
+		// Signing request
+		var textEncoderUtf8 = new textEncoding.TextEncoder('utf-8');
+		var signResponse = request('POST', baseUrl + '/sign', {
+			'content': base64js.fromByteArray(textEncoderUtf8.encode(stringToSign))
+		});
+		
+		console.info(TAG + 'Signature response received');
+		console.log(signResponse);
+		
+		if (
+			signResponse.errorCode === undefined ||
+			signResponse.reasonCode === undefined ||
+			signResponse.signature === undefined ||
+			signResponse.signatureAlgorithm === undefined ||
+			signResponse.signatureType === undefined
+		) {
+			console.error(TAG + 'Signature response is not valid');
+			return 'error:internalError';
+		}
+		
+		if (signResponse.errorCode !== 0) {
+			if (signResponse.errorCode === 1) {
+				console.info(TAG + 'Signature operation cancelled by user');
+				return 'error:userCancel';
+			}
+			
+			console.error(TAG + 'Error in operation, errorCode=' + signResponse.errorCode);
+			return 'error:internalError';
+		}
+		
+		if (signResponse.reasonCode !== 200) {
+			console.error(TAG + 'Error in operaton, reasonCode=' + signResponse.errorCode);
+			return 'error:internalError';
+		}
+
+		if (
+			signResponse.signatureType !== 'signature' ||
+			signResponse.signatureAlgorithm !== 'SHA1withRSA'
+		) {
+			console.error(TAG + 'Error in operaton, got wrong type or algorithm (' +
+				signResponse.signatureType + '/' + signResponse.signatureAlgorithm + ')');
+			return 'error:internalError';
+		}
+		
+		console.info(TAG + 'Signature successful, returning result to the browser');
+		console.info(TAG + 'Extension code completed');
+
+		return signResponse.signature;
 	}
-	
-	console.info(TAG + 'Signature successful, returning result to the browser');
-	console.info(TAG + 'Extension code completed');
 
-	return signResponse.signature;
-}
-
-// EXPORT
-window.crypto.signText = signText;
+	// EXPORT
+	root.crypto.signText = signText;
+})(window);
