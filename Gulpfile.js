@@ -6,7 +6,7 @@ const source = require('vinyl-source-stream');
 
 gulp.task('browser-polyfill' , function() {
 	// Source file
-	return	gulp.src('node_modules/webextension-polyfill/dist/browser-polyfill.js')
+	return gulp.src('node_modules/webextension-polyfill/dist/browser-polyfill.js')
 	// Output directory
 	.pipe(gulp.dest('extension/dist/'))
 });
@@ -28,6 +28,11 @@ gulp.task('script' , function() {
 	.pipe(source('script.js'))
 	// Output directory
 	.pipe(gulp.dest('extension/dist/'))
+});
+
+gulp.task('watch', function() {
+	gulp.watch('src/contentscript.js', ['contentscript']);
+	gulp.watch('src/script.js', ['script']);
 });
 
 gulp.task('default', ['browser-polyfill', 'contentscript', 'script']);
