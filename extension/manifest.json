@@ -18,7 +18,7 @@
 		],
 		"js": [
 			"lib/browser-polyfill.min.js",
-			"contentscript.js"
+			"dist/contentscript.js"
 		]
 	}],
 	"permissions": [
@@ -30,6 +30,6 @@
 		"https://127.0.0.1:53952/*"
 	],
 	"web_accessible_resources": [
-		"script.js"
+		"dist/script.js"
 	]
 }

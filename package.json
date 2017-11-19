@@ -11,7 +11,15 @@
   ],
   "author": "Information Services Plc",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
+    "browserify": "^14.5.0",
+    "gulp": "^3.9.1",
+    "vinyl-source-stream": "^1.1.0",
     "web-ext": "^2.2.2"
+  },
+  "dependencies": {
+    "base64-js": "^1.2.1",
+    "browser-polyfill": "^3.20.2",
+    "text-encoding": "^0.6.4"
   }
 }

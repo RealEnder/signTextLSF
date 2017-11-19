@@ -62,3 +62,6 @@ web-ext-artifacts
 
 # Mozilla web-ext auto-generated
 extension/.web-extension-id
+
+# Compiled sources
+extension/dist/
