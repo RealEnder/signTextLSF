@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "base64-js": "^1.2.1",
-    "text-encoding": "^0.6.4",
+    "utf8-string-bytes": "^1.0.2",
     "webextension-polyfill": "^0.2.1"
   }
 }

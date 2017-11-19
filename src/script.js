@@ -12,7 +12,7 @@
 	}
 	
 	var base64js = require('base64-js');
-	var textEncoding = require('text-encoding');
+	var utf8StringBytes = require('utf8-string-bytes');
 
 	function request(method, url, data) {
 		var TAG2 = TAG + '[' + method + ' ' + url + '] ';
@@ -160,9 +160,9 @@
 		console.info(TAG + 'Requesting signature');
 		
 		// Signing request
-		var textEncoderUtf8 = new textEncoding.TextEncoder('utf-8');
+		var stringBytes = utf8StringBytes.stringToUtf8ByteArray(stringToSign);
 		var signResponse = request('POST', baseUrl + '/sign', {
-			'content': base64js.fromByteArray(textEncoderUtf8.encode(stringToSign))
+			'content': base64js.fromByteArray(stringBytes)
 		});
 		
 		console.info(TAG + 'Signature response received');
