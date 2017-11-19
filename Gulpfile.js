@@ -4,6 +4,11 @@ const gulp = require('gulp');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 
+const sourceFiles = {
+	contentScript: 'src/contentscript.js',
+	mainScript: 'src/script.js'
+};
+
 gulp.task('browser-polyfill' , function() {
 	// Source file
 	return gulp.src('node_modules/webextension-polyfill/dist/browser-polyfill.js')
@@ -13,7 +18,7 @@ gulp.task('browser-polyfill' , function() {
 
 gulp.task('contentscript' , function() {
 	// Source file
-	return gulp.src('src/contentscript.js')
+	return gulp.src(sourceFiles.contentScript)
 	// Output directory
 	.pipe(gulp.dest('extension/dist/'))
 });
@@ -21,7 +26,7 @@ gulp.task('contentscript' , function() {
 gulp.task('script' , function() {
 	return browserify({
 		// Source file
-		entries: 'src/script.js',
+		entries: sourceFiles.mainScript,
 	})
 	.bundle()
 	// Output filename
@@ -30,9 +35,11 @@ gulp.task('script' , function() {
 	.pipe(gulp.dest('extension/dist/'))
 });
 
+gulp.task('build', ['browser-polyfill', 'contentscript', 'script']);
+
 gulp.task('watch', function() {
-	gulp.watch('src/contentscript.js', ['contentscript']);
-	gulp.watch('src/script.js', ['script']);
+	gulp.watch(sourceFiles.contentScript, ['contentscript']);
+	gulp.watch(sourceFiles.mainScript, ['script']);
 });
 
-gulp.task('default', ['browser-polyfill', 'contentscript', 'script']);
+gulp.task('default', ['build', 'watch']);
