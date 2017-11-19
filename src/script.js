@@ -14,19 +14,15 @@
 	var base64js = require('base64-js');
 	var textEncoding = require('text-encoding');
 
-	var xhr;
-
 	function request(method, url, data) {
 		var TAG2 = TAG + '[' + method + ' ' + url + '] ';
 		
 		try {
-			if (!xhr) {
-				xhr = new XMLHttpRequest;
+			var xhr = new XMLHttpRequest;
 
-				if (!xhr) {
-					console.error(TAG2 + 'Failed to create a XMLHttpRequest object');
-					return false;
-				}
+			if (!xhr) {
+				console.error(TAG2 + 'Failed to create a XMLHttpRequest object');
+				return false;
 			}
 
 			// crypto.signText() is blocking, so this must be blocking as well
