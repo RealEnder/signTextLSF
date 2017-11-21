@@ -1,5 +1,5 @@
 var s = document.createElement('script');
-s.src = browser.extension.getURL('dist/script.js');
+s.src = browser.extension.getURL('dist/js/script.js');
 s.addEventListener('load', function() {
 	this.parentNode.removeChild(this);
 }, false);

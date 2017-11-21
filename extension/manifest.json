@@ -6,10 +6,11 @@
 	"version": "1.0",
 	"author": "Information Services Plc.",
 	"icons": {
-		"40": "icons/signTextLSF-40.png",
-		"48": "icons/signTextLSF-48.png",
-		"64": "icons/signTextLSF-64.png",
-		"128": "icons/signTextLSF-128.png"
+		"16": "dist/icons/signTextLSF-16.png",
+		"40": "dist/icons/signTextLSF-40.png",
+		"48": "dist/icons/signTextLSF-48.png",
+		"64": "dist/icons/signTextLSF-64.png",
+		"128": "dist/icons/signTextLSF-128.png"
 	},
 
 	"content_scripts": [{
@@ -17,8 +18,8 @@
 			"*://*/*"
 		],
 		"js": [
-			"dist/browser-polyfill.js",
-			"dist/contentscript.js"
+			"dist/js/browser-polyfill.js",
+			"dist/js/contentscript.js"
 		]
 	}],
 	"permissions": [
@@ -30,6 +31,6 @@
 		"https://127.0.0.1:53952/*"
 	],
 	"web_accessible_resources": [
-		"dist/script.js"
+		"dist/js/script.js"
 	]
 }
