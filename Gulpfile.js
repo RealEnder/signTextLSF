@@ -4,6 +4,7 @@ const gulp = require('gulp');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
 const sharp = require('sharp');
+const fs = require('fs');
 
 const sourceFiles = {
 	contentScript: 'src/js/contentscript.js',
@@ -19,7 +20,7 @@ const destinationDirs = {
 
 const iconSizes = [16, 40, 48, 64, 128];
 
-gulp.task('browser-polyfill' , function() {
+gulp.task('browser-polyfill', function() {
 	return gulp
 		// Source file
 		.src('node_modules/webextension-polyfill/dist/browser-polyfill.js')
@@ -27,7 +28,7 @@ gulp.task('browser-polyfill' , function() {
 		.pipe(gulp.dest(destinationDirs.js));
 });
 
-gulp.task('contentscript' , function() {
+gulp.task('contentscript', function() {
 	return gulp
 		// Source file
 		.src(sourceFiles.contentScript)
@@ -35,7 +36,7 @@ gulp.task('contentscript' , function() {
 		.pipe(gulp.dest(destinationDirs.js));
 });
 
-gulp.task('script' , function() {
+gulp.task('script', function() {
 	return browserify({
 		// Source file
 		entries: sourceFiles.mainScript,
@@ -47,7 +48,13 @@ gulp.task('script' , function() {
 		.pipe(gulp.dest(destinationDirs.js));
 });
 
-gulp.task('icons' , function() {
+gulp.task('scripts', ['browser-polyfill', 'contentscript', 'script']);
+
+gulp.task('icons', ['scripts'], function() {
+	if (!fs.existsSync(destinationDirs.icons)) {
+		fs.mkdirSync(destinationDirs.icons);
+	}
+	
 	iconSizes.forEach(function(size) {
 		size = parseInt(size);
 		var source = size < 32 ? sourceFiles.simpleIcon : sourceFiles.icon;
@@ -59,7 +66,7 @@ gulp.task('icons' , function() {
 	});
 });
 
-gulp.task('build', ['browser-polyfill', 'contentscript', 'script', 'icons']);
+gulp.task('build', ['scripts', 'icons']);
 
 gulp.task('watch', function() {
 	gulp.watch(sourceFiles.contentScript, ['contentscript']);
