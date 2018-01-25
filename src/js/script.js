@@ -58,34 +58,6 @@
 		}
 	}
 
-	function detectFeatures(json, features) {
-		var i, tmp1, tmp2;
-		
-		for (i in features) {
-			if (features.hasOwnProperty(i)) {
-				if (!json[i]) {
-					throw new Error('Missing required key in version response');
-				}
-				if (typeof json[i] === "boolean" && json[i] !== features[i]) {
-					throw new Error('Invalid required boolean value');
-				}
-				if (typeof json[i] === 'string') {
-					tmp1 = json[i].split(',').map(function (v) {
-						return v.trim();
-					});
-					tmp2 = features[i].split(',').map(function (v) {
-						return v.trim();
-					});
-					tmp2.forEach(function (v) {
-						if (tmp1.indexOf(v) === -1) {
-							throw new Error('Missing required array item');
-						}
-					});
-				}
-			}
-		}
-	}
-
 	function checkServer(baseUrl) {
 		var TAG2 = TAG + '[' + baseUrl + '] ';
 		
@@ -114,16 +86,6 @@
 			return false;
 		}
 		
-		try {
-			// TODO
-			//detectFeatures(versionResponse, {});
-		}
-		catch (e) {
-			console.error(TAG2 + 'Feature detection error: ' + e.message);
-			return false;
-		}
-		
-		console.info(TAG2 + 'Feature detection successful, using this server');
 		return true;
 	}
 
