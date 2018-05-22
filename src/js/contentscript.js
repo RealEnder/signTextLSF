@@ -6,6 +6,6 @@ s.addEventListener('load', function() {
 const style = document.createElement('link');
 style.rel = 'stylesheet';
 style.type = 'text/css';
-style.href = chrome.extension.getURL('dist/css/signtext-modal.css');
+style.href = browser.extension.getURL('dist/css/signtext-modal.css');
 (document.head || document.documentElement).appendChild(s);
 (document.head || document.documentElement).appendChild(style);

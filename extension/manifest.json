@@ -37,7 +37,6 @@
 	"browser_action" : {
 		"default_icon" : "dist/icons/signTextLSF-48.png",
 		"default_title" : "Sign Text LSF",
-		"default_popup" : "dist/popup/popup.html",
-		"browser_style" : true
+		"default_popup" : "dist/popup/popup.html"
 	  }
 }
