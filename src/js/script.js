@@ -1,5 +1,23 @@
 (function(root) {
 	var TAG = '[signText] ';
+	const modal_html = `
+		<div class="signtext_popup_modal__fade">
+			<div class="signtext_popup_modal__content">
+			<div class="signtext_popup_modal__header">
+				<h1 class="title">SignText LSF</h1>
+			</div>
+			<div class="signtext_popup_modal__body">
+				<p>Please start signTextLSF.jnlp. If you don't have it, follow the link below.</p>
+				<br />
+				<a href="https://sign.uslugi.io/java/signTextLSF.jnlp" download="signTextLSF.jnlp">Download signTextLSF.jnlp</a>
+			</div>
+			<br />
+			<div class="signtext_popup_modal__footer">
+				<button type="button" class="signtext_popup_modal__button signtext_popup_modal__button--close">Close</button>
+			</div>
+			</div>
+		</div>
+`;
 
 	if (typeof root.crypto === 'undefined') {
 		console.warn(TAG + 'crypto is not defined - not a browser?');
@@ -58,6 +76,20 @@
 		}
 	}
 
+	function create_and_show_modal() {
+
+		const modal = document.createElement('div');
+		modal.classList.add('popup_modal');
+		modal.innerHTML = modal_html;
+		document.body.prepend(modal);
+	  
+		const button_close = modal.querySelector('.signtext_popup_modal__button.signtext_popup_modal__button--close');
+		!!button_close && button_close.addEventListener('click', () => {
+		  modal.parentNode.removeChild(modal);
+		}, false);
+	  
+	  }
+
 	function checkServer(baseUrl) {
 		var TAG2 = TAG + '[' + baseUrl + '] ';
 		
@@ -114,8 +146,9 @@
 		}
 		
 		if (baseUrl === null) {
+			create_and_show_modal();
 			console.error(TAG + 'LSF not found');
-			alert('Please start LSF before signing!');
+			//alert('Please start LSF before signing!');
 			return 'error:internalError';
 		}
 

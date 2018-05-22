@@ -9,12 +9,14 @@ const fs = require('fs');
 const sourceFiles = {
 	contentScript: 'src/js/contentscript.js',
 	mainScript: 'src/js/script.js',
+	popupCss: 'src/css/signtext-modal.css',
 	icon: 'src/icons/signTextLSF.svg',
 	simpleIcon: 'src/icons/signTextLSF-simple.svg'
 };
 
 const destinationDirs = {
 	js: 'extension/dist/js/',
+	css: 'extension/dist/css/',
 	icons: 'extension/dist/icons/'
 };
 
@@ -48,6 +50,14 @@ gulp.task('script', function() {
 		.pipe(gulp.dest(destinationDirs.js));
 });
 
+gulp.task('popupcss', function() {
+	return gulp
+		// Source file
+		.src(sourceFiles.popupCss)
+		// Output directory
+		.pipe(gulp.dest(destinationDirs.css));
+});
+
 gulp.task('scripts', ['browser-polyfill', 'contentscript', 'script']);
 
 gulp.task('icons', ['scripts'], function() {
@@ -66,7 +76,7 @@ gulp.task('icons', ['scripts'], function() {
 	});
 });
 
-gulp.task('build', ['scripts', 'icons']);
+gulp.task('build', ['scripts', 'icons', 'popupcss']);
 
 gulp.task('watch', function() {
 	gulp.watch(sourceFiles.contentScript, ['contentscript']);

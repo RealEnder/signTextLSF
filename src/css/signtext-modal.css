@@ -1,0 +1,45 @@
+.signtext_popup_modal__fade {
+    z-index : 999998;
+    position : fixed;
+    top : 0;
+    left : 0;
+    width : 100vw;
+    height : 100vh;
+    background-color : rgba(0, 0, 0, .5);
+  }
+  .signtext_popup_modal__content {
+    z-index : 999999;
+    margin : 3em auto;
+    width : 60vw;
+    min-width : 400px;
+    max-width : 760px;
+    min-height : 50px;
+    max-height : calc(100vh - 3em * 2);
+    background-color : #fff;
+    border-radius : 4px;
+    box-shadow : 0 4px 4px rgba(0, 0, 0, .3);
+  }
+  .signtext_popup_modal__header,
+  .signtext_popup_modal__body {
+    padding : 5px 10px;
+  }
+  .signtext_popup_modal__header {
+    border-bottom : 1px solid rgba(0, 0, 0, .2);
+  }
+  .signtext_popup_modal__header .title {
+    margin : 0;
+    padding : 0;
+  }
+  .signtext_popup_modal__footer {
+    padding : 5px 10px 10px 10px;
+    border-top : 1px solid rgba(0, 0, 0, .2);
+  }
+  .signtext_popup_modal__button--close {
+    padding : 4px 8px;
+    font-size : 14px;
+    background-color : #fff;
+    color : #000;
+    border : 1px solid skyblue;
+    border-radius : 5px;
+  }
+  
