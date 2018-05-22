@@ -11,13 +11,17 @@ const sourceFiles = {
 	mainScript: 'src/js/script.js',
 	popupCss: 'src/css/signtext-modal.css',
 	icon: 'src/icons/signTextLSF.svg',
-	simpleIcon: 'src/icons/signTextLSF-simple.svg'
+	simpleIcon: 'src/icons/signTextLSF-simple.svg',
+	menuScript: 'src/popup/popup.js',
+	menuCss: 'src/popup/popup.css',
+	menuHtml: 'src/popup/popup.html'
 };
 
 const destinationDirs = {
 	js: 'extension/dist/js/',
 	css: 'extension/dist/css/',
-	icons: 'extension/dist/icons/'
+	icons: 'extension/dist/icons/',
+	popup: 'extension/dist/popup/'
 };
 
 const iconSizes = [16, 40, 48, 64, 128];
@@ -58,6 +62,18 @@ gulp.task('popupcss', function() {
 		.pipe(gulp.dest(destinationDirs.css));
 });
 
+gulp.task('menu', function() {
+	return gulp
+		// Source file
+		.src([
+			sourceFiles.menuCss, 
+			sourceFiles.menuHtml, 
+			sourceFiles.menuScript
+		])
+		// Output directory
+		.pipe(gulp.dest(destinationDirs.popup));
+});
+
 gulp.task('scripts', ['browser-polyfill', 'contentscript', 'script']);
 
 gulp.task('icons', ['scripts'], function() {
@@ -76,7 +92,7 @@ gulp.task('icons', ['scripts'], function() {
 	});
 });
 
-gulp.task('build', ['scripts', 'icons', 'popupcss']);
+gulp.task('build', ['scripts', 'icons', 'popupcss', 'menu']);
 
 gulp.task('watch', function() {
 	gulp.watch(sourceFiles.contentScript, ['contentscript']);
