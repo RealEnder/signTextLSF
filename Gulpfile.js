@@ -14,7 +14,8 @@ const sourceFiles = {
 	simpleIcon: 'src/icons/signTextLSF-simple.svg',
 	menuScript: 'src/popup/popup.js',
 	menuCss: 'src/popup/popup.css',
-	menuHtml: 'src/popup/popup.html'
+	menuHtml: 'src/popup/popup.html',
+	backgroundScript: 'src/js/background.js'
 };
 
 const destinationDirs = {
@@ -74,6 +75,14 @@ gulp.task('menu', function() {
 		.pipe(gulp.dest(destinationDirs.popup));
 });
 
+gulp.task('background', function () {
+	return gulp
+		// Source file
+		.src(sourceFiles.backgroundScript)
+		// Output directory
+		.pipe(gulp.dest(destinationDirs.js));
+});
+
 gulp.task('scripts', ['browser-polyfill', 'contentscript', 'script']);
 
 gulp.task('icons', ['scripts'], function() {
@@ -92,7 +101,7 @@ gulp.task('icons', ['scripts'], function() {
 	});
 });
 
-gulp.task('build', ['scripts', 'icons', 'popupcss', 'menu']);
+gulp.task('build', ['scripts', 'icons', 'popupcss', 'menu', 'background']);
 
 gulp.task('watch', function() {
 	gulp.watch(sourceFiles.contentScript, ['contentscript']);

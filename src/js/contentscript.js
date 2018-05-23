@@ -9,3 +9,9 @@ style.type = 'text/css';
 style.href = browser.extension.getURL('dist/css/signtext-modal.css');
 (document.head || document.documentElement).appendChild(s);
 (document.head || document.documentElement).appendChild(style);
+
+window.addEventListener('message', function (e) {
+	if (e.source == window && e.data && e.data.badge) {
+		browser.runtime.sendMessage(e.data);
+	}
+})

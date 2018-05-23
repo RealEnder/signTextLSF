@@ -1,4 +1,4 @@
-(function(root) {
+(function (root) {
 	var TAG = '[signText] ';
 	var modal_html = 
 		'<div class="signtext_popup_modal__fade">' +
@@ -17,7 +17,11 @@
 			'</div>' +
 			'</div>' +
 		'</div>';
-;
+	
+	var baseUrl = null;
+	setTimeout(function () {
+		baseUrl = getBaseUrl();
+	}, 100);
 
 	if (typeof root.crypto === 'undefined') {
 		console.warn(TAG + 'crypto is not defined - not a browser?');
@@ -31,6 +35,41 @@
 	
 	var base64js = require('base64-js');
 	var utf8StringBytes = require('utf8-string-bytes');
+
+	function getBaseUrl() {
+		var result = null;
+		var baseUrls = [
+			'http://127.0.0.1:8090',
+			'https://127.0.0.1:8089',
+
+			'http://127.0.0.1:23125',
+			'https://127.0.0.1:23124',
+
+			'http://127.0.0.1:53953',
+			'https://127.0.0.1:53952'
+		];
+
+		var i;
+		for (i = 0; i < baseUrls.length; ++i) {
+			if (checkServer(baseUrls[i])) {
+				result = baseUrls[i];
+				break;
+			}
+		}
+
+		var badge = {
+			badge: true,
+			color: 'green'
+		};
+
+		if (result === null) {
+			badge.color = 'red';
+		}
+		
+		window.postMessage(badge, '*');
+
+		return result;
+	}
 
 	function request(method, url, data) {
 		var TAG2 = TAG + '[' + method + ' ' + url + '] ';
@@ -125,25 +164,7 @@
 	function signText(stringToSign) {
 		console.info(TAG + 'Extension code starting');
 
-		var baseUrl = null;
-		var baseUrls = [
-			'http://127.0.0.1:8090',
-			'https://127.0.0.1:8089',
-			
-			'http://127.0.0.1:23125',
-			'https://127.0.0.1:23124',
-			
-			'http://127.0.0.1:53953',
-			'https://127.0.0.1:53952'
-		];
-		
-		var i;
-		for (i = 0; i < baseUrls.length; ++i) {
-			if (checkServer(baseUrls[i])) {
-				baseUrl = baseUrls[i];
-				break;
-			}
-		}
+		if (baseUrl === null) baseUrl = getBaseUrl();
 		
 		if (baseUrl === null) {
 			create_and_show_modal();

@@ -38,5 +38,11 @@
 		"default_icon" : "dist/icons/signTextLSF-48.png",
 		"default_title" : "Sign Text LSF",
 		"default_popup" : "dist/popup/popup.html"
+	  },
+	  "background": {
+	  	"scripts": [
+			"dist/js/browser-polyfill.js",
+	  		"dist/js/background.js"
+	  	]
 	  }
 }
