@@ -40,6 +40,7 @@
 		"default_popup" : "dist/popup/popup.html"
 	  },
 	  "background": {
+		"persistent": true,
 	  	"scripts": [
 			"dist/js/browser-polyfill.js",
 	  		"dist/js/background.js"
