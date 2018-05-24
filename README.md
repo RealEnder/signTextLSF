@@ -5,4 +5,4 @@ WebExtension implementing crypto.signText() over LSF
 Build scripts work best with Node LTS (8.x at the moment of writing) and Python 2.7.x
 1. npm install
 2. gulp
-3. web-ext build
+3. web-ext build (must be run in Extension folder)
