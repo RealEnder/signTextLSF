@@ -1,9 +1,15 @@
+// Main script of the signTextLSF extension
+
+// Importing required functions
 import * as base64js from 'base64-js';
 import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
+// Initializing extension
 (function (root) {
 
 	const TAG = '[signText] ';
+
+	// Modal info box HTML
 	const modal_html = `<div class="signtext_popup_modal__fade">
 			<div class="signtext_popup_modal__content">
 			<div class="signtext_popup_modal__header">
@@ -21,7 +27,8 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 			</div>
 		</div>`;
 
-
+  // Showing information and download link 
+  // if LSF is not present
   function create_and_show_modal() {
 
     var modal = document.createElement('div');
@@ -36,6 +43,8 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
+  // Setting icon badge
+  // color: background color of the badge
   function set_badge(color) {
 
     var badge = {
@@ -46,6 +55,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
+  // Possible URLs for LSF
   var array_url = [
     'http://127.0.0.1:8090',
     'https://127.0.0.1:8089',
@@ -55,9 +65,13 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
     'http://127.0.0.1:53953',
     'https://127.0.0.1:53952'
-  ];
+	];
+	
+  // URL on witch LSF is listening
   var base_url = '';
 
+  // Setting base_url 
+  // response_json: response of the version method of LSF
   function set_base_url(response_json) {
 
     if (!!base_url) return true;
@@ -73,6 +87,8 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
+  // Requests possible URLs for Version response
+  // options: object with control properties
   function find_base_url(options = {}) {
 
     array_url.forEach((url, index) => {
@@ -85,6 +101,8 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
+  // Parsing Version response and 
+  // checking if the answer is from LSF
   function check_version_response(json) {
 
     if (json.version === undefined ||
@@ -98,6 +116,11 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
+  // HTTP Requester, implementing XMLHttpRequest
+  // method: http method
+  // url: request url
+  // data: payload to be sent
+  // options: object with control properties
   function xhr_request(method, url, data, options) {
 
     var async = options.async === undefined ? true : options.async;
@@ -141,7 +164,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
-
+  // Creating modal and setting badge if LSF not found
   function url_not_found() {
 
     create_and_show_modal();
@@ -151,9 +174,10 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
     return 'error:internalError';
 
   }
-  // https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
-
-
+  
+    // https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
+	// Implementation of Netscape's crypto.signText() using LSF
+	// stringToSign: text to be signed
 	function signText(stringToSign) {
 
 		console.info(TAG + 'Extension code starting');
@@ -195,7 +219,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 		}
 
 		if (signResponse.reasonCode !== 200) {
-			console.error(TAG + 'Error in operaton, reasonCode=' + signResponse.errorCode);
+			console.error(TAG + 'Error in operation, reasonCode=' + signResponse.errorCode);
 			return 'error:internalError';
 		}
 
@@ -203,7 +227,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 			signResponse.signatureType !== 'signature' ||
 			signResponse.signatureAlgorithm !== 'SHA1withRSA'
 		) {
-			console.error(TAG + 'Error in operaton, got wrong type or algorithm (' +
+			console.error(TAG + 'Error in operation, got wrong type or algorithm (' +
 				signResponse.signatureType + '/' + signResponse.signatureAlgorithm + ')');
 			return 'error:internalError';
 		}
