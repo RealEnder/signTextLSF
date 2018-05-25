@@ -3,20 +3,15 @@
 const gulp = require('gulp');
 const browserify = require('browserify');
 const source = require('vinyl-source-stream');
-const sharp = require('sharp');
+const buffer = require('vinyl-buffer');
+const rename = require('gulp-rename');
+const babel = require('babelify');
+const glob = require('glob');
+const es = require('event-stream');
 const fs = require('fs');
+const sharp = require('sharp');
 
-const sourceFiles = {
-	contentScript: 'src/js/contentscript.js',
-	mainScript: 'src/js/script.js',
-	popupCss: 'src/css/signtext-modal.css',
-	icon: 'src/icons/signTextLSF.svg',
-	simpleIcon: 'src/icons/signTextLSF-simple.svg',
-	menuScript: 'src/popup/popup.js',
-	menuCss: 'src/popup/popup.css',
-	menuHtml: 'src/popup/popup.html',
-	backgroundScript: 'src/js/background.js'
-};
+const iconSizes = [16, 40, 48, 64, 128];
 
 const destinationDirs = {
 	js: 'extension/dist/js/',
@@ -25,87 +20,114 @@ const destinationDirs = {
 	popup: 'extension/dist/popup/'
 };
 
-const iconSizes = [16, 40, 48, 64, 128];
+const path_icon = {
+	default : 'src/icons/signTextLSF.svg',
+	simple : 'src/icons/signTextLSF-simple.svg'
+};
 
-gulp.task('browser-polyfill', function() {
-	return gulp
-		// Source file
-		.src('node_modules/webextension-polyfill/dist/browser-polyfill.js')
-		// Output directory
-		.pipe(gulp.dest(destinationDirs.js));
-});
+gulp.task('js', function(done) {
 
-gulp.task('contentscript', function() {
-	return gulp
-		// Source file
-		.src(sourceFiles.contentScript)
-		// Output directory
-		.pipe(gulp.dest(destinationDirs.js));
-});
-
-gulp.task('script', function() {
-	return browserify({
-		// Source file
-		entries: sourceFiles.mainScript,
-	})
-		.bundle()
-		// Output filename
-		.pipe(source('script.js'))
-		// Output directory
-		.pipe(gulp.dest(destinationDirs.js));
-});
-
-gulp.task('popupcss', function() {
-	return gulp
-		// Source file
-		.src(sourceFiles.popupCss)
-		// Output directory
-		.pipe(gulp.dest(destinationDirs.css));
-});
-
-gulp.task('menu', function() {
-	return gulp
-		// Source file
-		.src([
-			sourceFiles.menuCss, 
-			sourceFiles.menuHtml, 
-			sourceFiles.menuScript
-		])
-		// Output directory
-		.pipe(gulp.dest(destinationDirs.popup));
-});
-
-gulp.task('background', function () {
-	return gulp
-		// Source file
-		.src(sourceFiles.backgroundScript)
-		// Output directory
-		.pipe(gulp.dest(destinationDirs.js));
-});
-
-gulp.task('scripts', ['browser-polyfill', 'contentscript', 'script']);
-
-gulp.task('icons', ['scripts'], function() {
-	if (!fs.existsSync(destinationDirs.icons)) {
-		fs.mkdirSync(destinationDirs.icons);
-	}
-	
-	iconSizes.forEach(function(size) {
-		size = parseInt(size);
-		var source = size < 32 ? sourceFiles.simpleIcon : sourceFiles.icon;
-		console.log('Generating icon ' + size + 'x' + size);
-		
-		sharp(source)
-			.resize(size, size)
-			.toFile(destinationDirs.icons + 'signTextLSF-' + size + '.png');
+	glob('./src/js/**/*.js', (err, files) => {
+		if (err) done(err);
+		const tasks = files.map(entry =>
+			browserify({
+				entries : [entry],
+				debug : true
+			})
+			.transform(
+				babel.configure({
+		      presets : ['env', 'es2015',]
+		    })
+			)
+			.bundle()
+			.pipe(source(entry.replace('src', 'extension/dist')))
+			.pipe(buffer())
+			.on('error', function(err){console.log(err)})
+			.pipe(gulp.dest('./'))
+		);
+		es.merge(tasks).on('end', done);
 	});
+
 });
 
-gulp.task('build', ['scripts', 'icons', 'popupcss', 'menu', 'background']);
 
-gulp.task('watch', function() {
-	gulp.watch(sourceFiles.contentScript, ['contentscript']);
-	gulp.watch(sourceFiles.mainScript, ['script']);
+gulp.task('popup', function(done) {
+
+	glob('./src/popup/**.*', (err, files) => {
+		if (err) done(err);
+		const tasks = files.map(entry => {
+			if (/.js/.test(entry)) {
+				return browserify({entries : [entry]})
+					.transform(
+						babel.configure({
+				      presets : ['env', 'es2015',]
+				    })
+					)
+					.bundle()
+					.pipe(source(entry.replace('src', 'extension/dist')))
+					.pipe(gulp.dest('./'))
+			}
+			else {
+				return gulp.src(entry)
+					.pipe(gulp.dest('./extension/dist/popup'))
+			}
+		});
+		es.merge(tasks).on('end', done);
+	});
+
 });
+
+
+gulp.task('css', function(done) {
+
+	glob('./src/css/**/*.css', (err, files) => {
+		if (err) done(err);
+		const tasks = files.map(entry =>
+			gulp.src(entry)
+			.pipe(gulp.dest('./extension/dist/css'))
+		);
+		es.merge(tasks).on('end', done);
+	});
+
+});
+
+
+gulp.task('browser-polyfill', () =>
+
+	gulp
+	// Source file
+	.src('node_modules/webextension-polyfill/dist/browser-polyfill.js')
+	// Output directory
+	.pipe(gulp.dest(destinationDirs.js))
+
+);
+
+
+gulp.task('icons', ['browser-polyfill'], function() {
+
+	if (!fs.existsSync(destinationDirs.icons)) fs.mkdirSync(destinationDirs.icons);
+	iconSizes.forEach(size => {
+		size = +size;
+		const source = size < 32 ? path_icon.simple : path_icon.default;
+		console.log('Generating icon ' + size + 'x' + size);
+		sharp(source)
+		.resize(size, size)
+		.toFile(destinationDirs.icons + 'signTextLSF-' + size + '.png');
+	});
+
+});
+
+
+gulp.task('watch', () => {
+
+	gulp.watch('src/js/**/**.js', ['js']);
+	gulp.watch('src/popup/**.*', ['popup']);
+	gulp.watch('src/css/**/**.css', ['css']);
+
+});
+
+
+gulp.task('build', ['js', 'popup', 'css', 'icons']);
+
 
 gulp.task('default', ['build', 'watch']);
