@@ -10,36 +10,56 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 	const TAG = '[signText] ';
 
 	// Modal info box HTML
-	const modal_html = `<div class="signtext_popup_modal__fade">
-			<div class="signtext_popup_modal__content">
-			<div class="signtext_popup_modal__header">
-				<h1 class="title">SignText LSF</h1>
-			</div>
-			<div class="signtext_popup_modal__body">
-				<p>Please start signTextLSF.jnlp. If you don't have it, follow the link below.</p>
-				<br />
-				<a href="https://sign.uslugi.io/java/signTextLSF.jnlp" download="signTextLSF.jnlp">Download signTextLSF.jnlp</a>
-			</div>
-			<br />
-			<div class="signtext_popup_modal__footer">
-				<button type="button" class="signtext_popup_modal__button signtext_popup_modal__button--close">Close</button>
-			</div>
-			</div>
-		</div>`;
+	const modal_html = `<div class="sign_text_popup_modal signtext_popup_modal__fade">
+    <div class="signtext_popup_modal__content">
+      <div class="signtext_popup_modal__header">
+        <h1 class="title">SignText LSF</h1>
+      </div>
+      <div class="signtext_popup_modal__body">
+        <div class="signtext__error">
+          <p class="danger">Connection error occurred.</p>
+        </div>
+        <p>Please check if signTextLSF.jnlp is up and running.</p>
+        <div class="signtext__toggle">
+          <div class="signtext__toggle__header">
+            <p>I do not have signTextLSF.jnlp.</p>
+          </div>
+          <div class="signtext__toggle__body">
+            <p>Download <a href="https://sign.uslugi.io/java/signTextLSF.jnlp" download="signTextLSF.jnlp">signTextLSF.jnlp</a> and start it.
+            </p>
+            <p>Refresh current page.</p>
+          </div>
+        </div>
+        <div class="signtext__toggle">
+          <div class="signtext__toggle__header">I have started signTextLSF, but still experiencing an error.</div>
+          <div class="signtext__toggle__body">
+            <p>Description about site CSP.</p>
+          </div>
+        </div>
+      </div>
+      <br />
+      <div class="signtext_popup_modal__footer">
+        <button type="button" class="signtext_popup_modal__button signtext_popup_modal__button--close">Close</button>
+      </div>
+    </div>
+  </div>`;
 
-  // Showing information and download link 
+
+  // Showing information and download link
   // if LSF is not present
   function create_and_show_modal() {
 
-    var modal = document.createElement('div');
+    const modal_exists = document.querySelector('.sign_text_popup_modal');
+    if (modal_exists) return true;
+    const modal = document.createElement('div');
     modal.classList.add('popup_modal');
     modal.innerHTML = modal_html;
     document.body.appendChild(modal);
 
-    var button_close = modal.querySelector('.signtext_popup_modal__button.signtext_popup_modal__button--close');
-    !!button_close && button_close.addEventListener('click', function(){
-      modal.parentNode.removeChild(modal);
-    }, false);
+    const button_close = modal.querySelector('.signtext_popup_modal__button.signtext_popup_modal__button--close');
+    !!button_close && button_close.addEventListener('click', () => modal.parentNode.removeChild(modal), false);
+    Array.from(document.querySelectorAll('.signtext__toggle__header'))
+    .map(a => a.addEventListener('click', e=>e.currentTarget.parentNode.classList.toggle('open')))
 
   }
 
@@ -47,7 +67,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
   // color: background color of the badge
   function set_badge(color) {
 
-    var badge = {
+    const badge = {
       badge : true,
       color : color || 'green',
     };
@@ -56,7 +76,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
   }
 
   // Possible URLs for LSF
-  var array_url = [
+  const array_url = [
     'http://127.0.0.1:8090',
     'https://127.0.0.1:8089',
 
@@ -66,11 +86,11 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
     'http://127.0.0.1:53953',
     'https://127.0.0.1:53952'
 	];
-	
-  // URL on witch LSF is listening
-  var base_url = '';
 
-  // Setting base_url 
+  // URL on witch LSF is listening
+  let base_url = '';
+
+  // Setting base_url
   // response_json: response of the version method of LSF
   function set_base_url(response_json) {
 
@@ -101,7 +121,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
   }
 
-  // Parsing Version response and 
+  // Parsing Version response and
   // checking if the answer is from LSF
   function check_version_response(json) {
 
@@ -123,24 +143,24 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
   // options: object with control properties
   function xhr_request(method, url, data, options) {
 
-    var async = options.async === undefined ? true : options.async;
-    var callback_success = options.callback_success || false;
-    var callback_end = options.callback_end || false;
+    const is_async = options.async === undefined ? true : options.async;
+    const callback_success = options.callback_success || false;
+    const callback_end = options.callback_end || false;
     try {
-      var xhr = new XMLHttpRequest();
-      xhr.open(method, url, async);
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, url, is_async);
       if (data) {
-        var isFirefox = (navigator.userAgent.indexOf('Firefox/') > -1);
+        const isFirefox = (navigator.userAgent.indexOf('Firefox/') > -1);
         if (!isFirefox) xhr.setRequestHeader('Content-Type', 'application/json');
       }
-      if (async && !!callback_success) {
+      if (is_async && !!callback_success) {
         xhr.onload = function(success) {
           console.log('success', url);
-          var response_json = JSON.parse(xhr.responseText);
+          const response_json = JSON.parse(xhr.responseText);
           if (typeof callback_success === 'function') callback_success(response_json);
         }
       }
-      if (async && !!callback_end) {
+      if (is_async && !!callback_end) {
         xhr.addEventListener('loadend', function() {
           if (typeof end_callback === 'function') end_callback();
         });
@@ -150,8 +170,8 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
         console.warn(error);
       }
       xhr.send(JSON.stringify(data));
-      if (!async) {
-        var response_json = JSON.parse(xhr.responseText);
+      if (!is_async) {
+        const response_json = JSON.parse(xhr.responseText);
         if (typeof callback_success === 'function') callback_success(response_json);
         return response_json;
       }
@@ -174,12 +194,13 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
     return 'error:internalError';
 
   }
-  
+
     // https://docs.oracle.com/cd/E19957-01/816-6152-10/sgntxt.htm
 	// Implementation of Netscape's crypto.signText() using LSF
 	// stringToSign: text to be signed
 	function signText(stringToSign) {
 
+    if (!stringToSign) return 'error:internalError';
 		console.info(TAG + 'Extension code starting');
     if (!base_url) find_base_url({async : false});
     if (!base_url) return url_not_found();
@@ -187,13 +208,13 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
 		// Signing request
 		const stringBytes = stringToUtf8ByteArray(stringToSign);
-    var sign_data = {
+    const sign_data = {
       'content': base64js.fromByteArray(stringBytes)
     };
-    var sign_options = {
+    const sign_options = {
       async : false
     };
-    var signResponse = xhr_request('post', base_url + '/sign', sign_data, sign_options);
+    const signResponse = xhr_request('post', base_url + '/sign', sign_data, sign_options);
 
 		console.info(TAG + 'Signature response received');
 		// console.log(signResponse);
