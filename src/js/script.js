@@ -19,13 +19,13 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
         <div class="signtext__error">
           <p class="danger">Connection error occurred.</p>
         </div>
-        <p>Please check if signTextLSF.jnlp is up and running.</p>
+        <p>Please check if signTextLSFSHA256.jnlp is up and running.</p>
         <div class="signtext__toggle">
           <div class="signtext__toggle__header">
-            <p>I do not have signTextLSF.jnlp.</p>
+            <p>I do not have signTextLSFSHA256.jnlp.</p>
           </div>
           <div class="signtext__toggle__body">
-            <p>Download <a href="https://sign.uslugi.io/java/signTextLSF.jnlp" download="signTextLSF.jnlp">signTextLSF.jnlp</a> and start it.
+            <p>Download <a href="https://sign.uslugi.io/java/signTextLSFSHA256.jnlp" download="signTextLSFSHA256.jnlp">signTextLSFSHA256.jnlp</a> and start it.
             </p>
             <p>Refresh current page.</p>
           </div>
