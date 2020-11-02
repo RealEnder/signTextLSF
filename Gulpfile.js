@@ -103,7 +103,7 @@ gulp.task('browser-polyfill', () =>
 );
 
 
-gulp.task('icons', ['browser-polyfill'], function() {
+gulp.task('icons', gulp.series('browser-polyfill', function() {
 
 	if (!fs.existsSync(destinationDirs.icons)) fs.mkdirSync(destinationDirs.icons);
 	iconSizes.forEach(size => {
@@ -115,7 +115,7 @@ gulp.task('icons', ['browser-polyfill'], function() {
 		.toFile(destinationDirs.icons + 'signTextLSF-' + size + '.png');
 	});
 
-});
+}));
 
 
 gulp.task('watch', () => {
@@ -127,7 +127,7 @@ gulp.task('watch', () => {
 });
 
 
-gulp.task('build', ['js', 'popup', 'css', 'icons']);
+gulp.task('build', gulp.series('js', 'popup', 'css', 'icons'));
 
 
-gulp.task('default', ['build', 'watch']);
+gulp.task('default', gulp.series('build', 'watch'));
