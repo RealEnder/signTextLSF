@@ -68,3 +68,6 @@ extension/.web-extension-id
 
 # Compiled sources
 extension/dist/
+
+# IDE config
+/.idea/
