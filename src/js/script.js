@@ -246,7 +246,7 @@ import { stringToUtf8ByteArray } from 'utf8-string-bytes';
 
 		if (
 			signResponse.signatureType !== 'signature' ||
-			signResponse.signatureAlgorithm !== 'SHA1withRSA'
+            ['SHA1withRSA', 'Sha256WithRSA'].indexOf(signResponse.signatureAlgorithm) === -1
 		) {
 			console.error(TAG + 'Error in operation, got wrong type or algorithm (' +
 				signResponse.signatureType + '/' + signResponse.signatureAlgorithm + ')');
